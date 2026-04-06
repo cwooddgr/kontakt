@@ -10,8 +10,10 @@
 		0040A12CBA2062801F8921A1 /* KontaktApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0031331564572DB0B4857728 /* KontaktApp.swift */; };
 		07D7B3BBB740CDA9E1E2A633 /* CNContact+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C8D704F5253D672EF99EBB /* CNContact+Extensions.swift */; };
 		107431F1B2EF10C9FB87A7E5 /* SearchEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2A21E5F3C540B0B2632D31 /* SearchEngineTests.swift */; };
+		13FF45ADA63B25775417E504 /* VCardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDEE1BAF7D11EC90360A7608 /* VCardService.swift */; };
 		140A78B37DC3389F0DA73273 /* SectionIndexView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000AF6C2A562A2BBEE22D2EA /* SectionIndexView.swift */; };
 		16D77548EEA237EF8FC4D711 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 708195A190B57FEB5279CFC2 /* Localizable.xcstrings */; };
+		1C8693ACB6E57936710C0EE0 /* MyCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5D816AD0324DC3EC126948 /* MyCardView.swift */; };
 		1E5778846450412983EACFC5 /* ContactChangeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C51B317CDC84A2A038CB337F /* ContactChangeObserver.swift */; };
 		22C48F3A9C872B94CF08DD5B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBDAE34B8CB7229BC851A9D4 /* SettingsView.swift */; };
 		2D8E85126DDC1EF6BF4EED49 /* AISparkleIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A073138F23B772293A13CB7 /* AISparkleIndicator.swift */; };
@@ -33,6 +35,7 @@
 		83C77BDE9ACC99487F64DED7 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2F8EFCF9D04FBDDDA67FBD /* AppState.swift */; };
 		83C999B347BAAB37E380101A /* RegexParsingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE24EA951D42E52B2CE371AE /* RegexParsingService.swift */; };
 		8A9CABE2330CED63478F5924 /* RegexParsingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D190F13F0120728F906D9E0 /* RegexParsingServiceTests.swift */; };
+		8E8F187AA042AADC130606D5 /* MyCardContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39BE5239FDB10E9CAEF14BCA /* MyCardContactPicker.swift */; };
 		9AF02E8EF726F7EE70612BF3 /* ContactCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0C0CCF10DA53399E3F7012 /* ContactCardView.swift */; };
 		A1B284A2C74463E081014097 /* ParsedContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60882EB2E9EC02B444DFB27A /* ParsedContact.swift */; };
 		A3123B5B4246506D0B8982D8 /* ContactWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F9EA7179AAD015E8AF1B59D /* ContactWrapperTests.swift */; };
@@ -66,12 +69,14 @@
 		0031331564572DB0B4857728 /* KontaktApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KontaktApp.swift; sourceTree = "<group>"; };
 		074DBCC42A6062AC8E6E14D3 /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
 		0B465A55ADC9B0204FE9CB8F /* ContactStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactStore.swift; sourceTree = "<group>"; };
+		0D5D816AD0324DC3EC126948 /* MyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCardView.swift; sourceTree = "<group>"; };
 		0F1AA62BBABD1E733D688C05 /* KontaktTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KontaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		139B4AC62E1702AB39366776 /* ContactListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactListView.swift; sourceTree = "<group>"; };
 		2A073138F23B772293A13CB7 /* AISparkleIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISparkleIndicator.swift; sourceTree = "<group>"; };
 		314DDD1046E4E427604BADE9 /* Kontakt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kontakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36620C875617EDFFF402D9ED /* FullEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullEditView.swift; sourceTree = "<group>"; };
 		36E522FF47674164BC40EB3F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		39BE5239FDB10E9CAEF14BCA /* MyCardContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCardContactPicker.swift; sourceTree = "<group>"; };
 		3A5918539D184C3FCDE99678 /* FieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldView.swift; sourceTree = "<group>"; };
 		3F9EA7179AAD015E8AF1B59D /* ContactWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactWrapperTests.swift; sourceTree = "<group>"; };
 		426A88F20EF8F938796B46D4 /* NotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesView.swift; sourceTree = "<group>"; };
@@ -92,6 +97,7 @@
 		8D2DC44BE40890781AC5BC40 /* CopyConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyConfirmation.swift; sourceTree = "<group>"; };
 		A9C1867AF4DABBB3A2AAC680 /* ContactWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactWrapper.swift; sourceTree = "<group>"; };
 		BBEF0B9EC6E5B1DDD5DB6ADE /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
+		BDEE1BAF7D11EC90360A7608 /* VCardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardService.swift; sourceTree = "<group>"; };
 		BE24EA951D42E52B2CE371AE /* RegexParsingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexParsingService.swift; sourceTree = "<group>"; };
 		C51B317CDC84A2A038CB337F /* ContactChangeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactChangeObserver.swift; sourceTree = "<group>"; };
 		CBDAE34B8CB7229BC851A9D4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -157,6 +163,7 @@
 				294412D75C0AA91DF3AD2752 /* ContactList */,
 				417F09F863B2FE5A990CAA85 /* Creation */,
 				46ABD4B5A12EA6D3C1A3BACC /* Editing */,
+				7F6DECC62645D01FB2575615 /* MyCard */,
 				D1BF29411CAD5872C9A05446 /* Shared */,
 			);
 			path = Views;
@@ -182,8 +189,18 @@
 				0B465A55ADC9B0204FE9CB8F /* ContactStore.swift */,
 				BE24EA951D42E52B2CE371AE /* RegexParsingService.swift */,
 				68882ECA5F1BA34ACBC6660B /* SearchEngine.swift */,
+				BDEE1BAF7D11EC90360A7608 /* VCardService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		7F6DECC62645D01FB2575615 /* MyCard */ = {
+			isa = PBXGroup;
+			children = (
+				39BE5239FDB10E9CAEF14BCA /* MyCardContactPicker.swift */,
+				0D5D816AD0324DC3EC126948 /* MyCardView.swift */,
+			);
+			path = MyCard;
 			sourceTree = "<group>";
 		};
 		878A5FFD68F3BB01B4ADE9A1 = {
@@ -380,6 +397,8 @@
 				794D8F5FF47E33D9ADA47D2D /* InlineFieldEditor.swift in Sources */,
 				0040A12CBA2062801F8921A1 /* KontaktApp.swift in Sources */,
 				41B9B926715373CC319EB98D /* LimitedAccessBanner.swift in Sources */,
+				8E8F187AA042AADC130606D5 /* MyCardContactPicker.swift in Sources */,
+				1C8693ACB6E57936710C0EE0 /* MyCardView.swift in Sources */,
 				7A890BD1D4B30DE3BC97AD35 /* NewContactView.swift in Sources */,
 				AA6799637988826B08B536F2 /* NotesView.swift in Sources */,
 				BB0400E663964BBFAA384093 /* OnboardingView.swift in Sources */,
@@ -392,6 +411,7 @@
 				140A78B37DC3389F0DA73273 /* SectionIndexView.swift in Sources */,
 				22C48F3A9C872B94CF08DD5B /* SettingsView.swift in Sources */,
 				5EEC674112C0F1C8FE97BAFE /* String+PhoneNormalization.swift in Sources */,
+				13FF45ADA63B25775417E504 /* VCardService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

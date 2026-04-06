@@ -292,7 +292,6 @@ App Launch
 - Triage / cleanup card-stack UI
 - Smart filters (no photo, no email, duplicates, etc.)
 - Freeform new contact creation (natural language parse)
-- Widgets (Pinned Contacts, Quick Search)
 - My Card with QR code sharing
 
 ### Phase 3 — Refinement

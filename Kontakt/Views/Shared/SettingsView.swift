@@ -9,10 +9,13 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage("myCardContactIdentifier") private var myCardContactIdentifier: String = ""
+
     var body: some View {
         NavigationStack {
             List {
                 displaySection
+                myCardSection
                 contactsSection
                 aboutSection
             }
@@ -46,6 +49,35 @@ struct SettingsView: View {
                 .font(.footnote)
                 .foregroundStyle(Color.textSecondary)
         }
+    }
+
+    // MARK: - My Card Section
+
+    private var myCardSection: some View {
+        Section("My Card") {
+            NavigationLink {
+                MyCardView()
+            } label: {
+                HStack {
+                    Text("My Card")
+                        .foregroundStyle(Color.textPrimary)
+                    Spacer()
+                    if let name = myCardContactName {
+                        Text(name)
+                            .foregroundStyle(Color.textSecondary)
+                    } else {
+                        Text("Not Set")
+                            .foregroundStyle(Color.textTertiary)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Looks up the display name for the stored My Card contact from the in-memory list.
+    private var myCardContactName: String? {
+        guard !myCardContactIdentifier.isEmpty else { return nil }
+        return contactStore.contacts.first { $0.identifier == myCardContactIdentifier }?.fullName
     }
 
     // MARK: - Contacts Section

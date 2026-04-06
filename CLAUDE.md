@@ -43,7 +43,7 @@ Strictly follows Apple HIG for iOS 26. Additionally Dieter Rams-inspired: less, 
 ## Development Phases
 
 1. **Foundation (MVP):** Contact list + search, contact card + action bar, freeform address input, inline quick edit, full edit mode, pin contacts, Light/Dark mode
-2. **Cleanup & Polish:** Triage card-stack UI, smart filters, freeform new contact creation, widgets, My Card with QR
+2. **Cleanup & Polish:** Triage card-stack UI, smart filters, freeform new contact creation, My Card with QR
 3. **Refinement:** Groups, recent contacts (CallKit), iPad, accessibility audit, localization, Shortcuts/Siri
 4. **macOS:** macOS support
 
