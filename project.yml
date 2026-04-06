@@ -33,8 +33,8 @@ targets:
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
-        INFOPLIST_KEY_NSContactsUsageDescription: "Kontakt needs access to your contacts to display and manage them. All data stays on your device."
-        INFOPLIST_KEY_CFBundleDisplayName: Kontakt
+        INFOPLIST_KEY_NSContactsUsageDescription: "People needs access to your contacts to display and manage them. All data stays on your device."
+        INFOPLIST_KEY_CFBundleDisplayName: People
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         TARGETED_DEVICE_FAMILY: "1"

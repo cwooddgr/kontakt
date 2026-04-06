@@ -1,3 +1,5 @@
+**Note:** This spec has been superseded by people-spec-update-april6.md. The app has been renamed from Kontakt to People.
+
 # Kontakt — Design Specification
 
 **Visual & Interaction Design Reference**

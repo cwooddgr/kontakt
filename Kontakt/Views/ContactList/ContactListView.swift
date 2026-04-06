@@ -25,7 +25,7 @@ struct ContactListView: View {
                 contactList
             }
         }
-        .navigationTitle("Kontakt")
+        .navigationTitle("People")
         .searchable(
             text: $searchText,
             isPresented: Bindable(appState).isSearchActive,

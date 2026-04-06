@@ -17,7 +17,7 @@ struct LimitedAccessBanner: View {
                     .font(.kBody)
                     .foregroundStyle(Color.accentSlateBlue)
 
-                Text("Kontakt works best with full contact access")
+                Text("People works best with full contact access")
                     .font(.kBody)
                     .foregroundStyle(Color.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)

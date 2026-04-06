@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kontakt is a free iOS contacts app — a drop-in replacement for Apple's Contacts. It reads/writes the system `CNContactStore` directly with no proprietary data store, no account, no sync service.
+People is a free iOS contacts app — a drop-in replacement for Apple's Contacts. It reads/writes the system `CNContactStore` directly with no proprietary data store, no account, no sync service.
 
 ## Naming
 
-- **App name (everywhere):** Kontakt
+- **App name (everywhere):** People
 - **Developer:** DGR Labs
 
 ## Technical Stack

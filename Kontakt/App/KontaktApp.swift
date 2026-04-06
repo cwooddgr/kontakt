@@ -2,7 +2,7 @@ import SwiftUI
 import Contacts
 
 @main
-struct KontaktApp: App {
+struct PeopleApp: App {
     @State private var contactStore = ContactStore()
     @State private var appState = AppState()
 

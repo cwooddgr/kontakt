@@ -1,4 +1,6 @@
-# Kontakt — Technical Design & Refined Spec
+**Note:** This spec has been superseded by people-spec-update-april6.md. The app has been renamed from Kontakt to People.
+
+# People — Technical Design & Refined Spec
 
 **Supplement to contacts-app-spec.md**
 *DGR Labs — April 2026*
@@ -80,7 +82,7 @@ Views (observe ContactStore directly)
 
 ### Contact Fetching Strategy
 
-Fetching all contacts with all keys is expensive. Kontakt uses a **two-tier fetch**:
+Fetching all contacts with all keys is expensive. People uses a **two-tier fetch**:
 
 1. **List fetch** — minimal keys for the contact list display:
    - `CNContactGivenNameKey`, `CNContactFamilyNameKey`
@@ -267,9 +269,9 @@ Since we can't add custom fields to `CNContact`, pinned state is stored in **Use
 // Value: [String] — array of CNContact.identifier values
 ```
 
-This is the ONE exception to "no app-specific storage." It's a small, non-critical piece of metadata. If the user uninstalls Kontakt, pins are lost — acceptable tradeoff vs. adding a full database.
+This is the ONE exception to "no app-specific storage." It's a small, non-critical piece of metadata. If the user uninstalls People, pins are lost — acceptable tradeoff vs. adding a full database.
 
-**Alternative considered:** Using a CNGroup named "Kontakt-Pinned" to store pins in the system contact store. Rejected because it pollutes the user's groups and would be visible in Apple's Contacts app.
+**Alternative considered:** Using a CNGroup named "People-Pinned" to store pins in the system contact store. Rejected because it pollutes the user's groups and would be visible in Apple's Contacts app.
 
 ---
 
@@ -309,7 +311,7 @@ Fully custom from day one — no `CNContactViewController` bridge. For adding ne
 
 ### iOS 18+ Limited Access
 If the user grants limited access instead of full:
-- Show a banner at the top of the list: "Kontakt works best with full contact access"
+- Show a banner at the top of the list: "People works best with full contact access"
 - Tap banner → re-request or deep-link to Settings
 - App still functions with the limited set — just shows fewer contacts
 
@@ -375,7 +377,7 @@ Baked in from day one, not bolted on in Phase 3:
 
 ## Resolved Design Decisions
 
-1. **Sort order:** Read from `CNContactsUserDefaults.shared().sortOrder` (match system preference). Offer First/Last and Last/First in Kontakt's settings.
+1. **Sort order:** Read from `CNContactsUserDefaults.shared().sortOrder` (match system preference). Offer First/Last and Last/First in People's settings.
 
 2. **Swipe actions on the list:** Left-swipe reveals delete. Right-swipe to pin/unpin.
 

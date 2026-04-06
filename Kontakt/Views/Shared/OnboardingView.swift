@@ -20,7 +20,7 @@ struct OnboardingView: View {
 
             // App identity
             VStack(spacing: KSpacing.s) {
-                Text("Kontakt")
+                Text("People")
                     .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.textPrimary)
 
@@ -61,7 +61,7 @@ struct OnboardingView: View {
 
     private var notDeterminedContent: some View {
         VStack(spacing: KSpacing.xl) {
-            Text("Kontakt needs access to your contacts to work. All data stays on your device \u{2014} no accounts, no cloud sync, no tracking.")
+            Text("People needs access to your contacts to work. All data stays on your device \u{2014} no accounts, no cloud sync, no tracking.")
                 .font(.kBody)
                 .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
@@ -87,7 +87,7 @@ struct OnboardingView: View {
 
     private var deniedContent: some View {
         VStack(spacing: KSpacing.xl) {
-            Text("Kontakt needs full contact access to function. Please enable it in Settings.")
+            Text("People needs full contact access to function. Please enable it in Settings.")
                 .font(.kBody)
                 .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
@@ -117,7 +117,7 @@ struct OnboardingView: View {
                     .font(.kBody)
                     .foregroundStyle(Color.accentSlateBlue)
 
-                Text("Kontakt is running with limited contact access. Some contacts may not be visible.")
+                Text("People is running with limited contact access. Some contacts may not be visible.")
                     .font(.kBody)
                     .foregroundStyle(Color.textSecondary)
             }

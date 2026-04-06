@@ -1,4 +1,4 @@
-# Kontakt
+# People
 
 A beautifully designed drop-in replacement for Apple's iOS Contacts app.
 
@@ -10,26 +10,27 @@ Less, but better.
 
 Apple's Contacts app has been functionally neglected for over a decade. Pasting an address is torture. Search is shallow. Editing feels like a government form. The design wastes half the screen on a giant monogram circle.
 
-Kontakt fixes all of it.
+People fixes all of it.
 
 ## What
 
-- **Freeform address input** — paste a full address, Kontakt parses it. No more distributing text across four fields.
-- **On-device AI parsing** — on iPhone 15 Pro+ with iOS 26, the Foundation Models framework handles all natural language parsing (addresses, contact creation, duplicate detection). Older devices get a regex + MapKit fallback.
-- **Smart search** — searches across name, company, email, phone, address, and notes. Fuzzy matching, phone number normalization, relevance ranking.
-- **Inline editing** — tap any field to edit in place. No Edit → scroll → change → Done ceremony.
-- **Contact cleanup** *(Phase 2)* — card-stack triage UI for pruning stale contacts.
+People is organized around three core flows:
+
+- **Lookup** — find anyone instantly with smart search across name, company, email, phone, address, and notes. Fuzzy matching, phone number normalization, relevance ranking.
+- **Capture** — add contacts fast with freeform input. Paste a full address and People parses it. On-device AI parsing on iPhone 15 Pro+ with iOS 26 via Foundation Models; regex + MapKit fallback on older devices.
+- **Hygiene** — keep your contacts clean with card-stack triage, smart filters, and inline editing. Tap any field to edit in place. No Edit → scroll → change → Done ceremony.
+
 - **Zero lock-in** — reads and writes the system `CNContactStore`. No proprietary database, no account, no sync service. Switch back anytime.
 
 ## Design
 
 Strictly adherent to Apple Human Interface Guidelines for iOS 26. Additionally Dieter Rams-inspired: every element earns its place. No visual noise, no feature creep.
 
-- Information density prioritized — more contacts per screen than Apple's app
+- Information density prioritized -- more contacts per screen than Apple's app
 - Monochrome palette with a single slate blue accent
 - Whitespace separates, not lines
 - No colored contact backgrounds, no giant avatar circles
-- Action buttons only shown when data exists — no greyed-out buttons
+- Action buttons only shown when data exists -- no greyed-out buttons
 
 ## Tech Stack
 
