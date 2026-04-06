@@ -59,6 +59,11 @@ extension Font {
     static var search: Font {
         .system(.callout, weight: .regular)
     }
+
+    /// Large name display for person view header
+    static var nameDisplay: Font {
+        .system(.title2, weight: .semibold)
+    }
 }
 
 // MARK: - Corner Radii

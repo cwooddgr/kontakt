@@ -5,6 +5,9 @@ import Contacts
 struct PeopleApp: App {
     @State private var contactStore = ContactStore()
     @State private var appState = AppState()
+    @State private var tagStore = TagStore()
+    @State private var interactionLogStore = InteractionLogStore()
+    @State private var recentlyDeletedStore = RecentlyDeletedStore()
 
     var body: some Scene {
         WindowGroup {
@@ -34,8 +37,12 @@ struct PeopleApp: App {
             }
             .environment(contactStore)
             .environment(appState)
+            .environment(tagStore)
+            .environment(interactionLogStore)
+            .environment(recentlyDeletedStore)
             .task {
                 await contactStore.checkAuthorizationStatus()
+                recentlyDeletedStore.purgeExpired()
             }
         }
     }

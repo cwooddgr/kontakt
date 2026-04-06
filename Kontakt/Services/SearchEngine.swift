@@ -46,7 +46,12 @@ final class SearchEngine: Sendable {
     ///
     /// Call this on a background thread. The resulting array is `Sendable` and can
     /// be stored and reused across search calls until the contact list changes.
-    func buildIndex(from contacts: [CNContact]) -> [SearchableContact] {
+    ///
+    /// - Parameters:
+    ///   - contacts: The contacts fetched with `indexFetchKeys`.
+    ///   - tags: Optional mapping of contact identifier to tag names. When provided,
+    ///     each tag is indexed as a `.tag` field token.
+    func buildIndex(from contacts: [CNContact], tags: [String: [String]] = [:]) -> [SearchableContact] {
         contacts.map { contact in
             var tokens: [SearchableContact.Token] = []
 
@@ -57,6 +62,13 @@ final class SearchEngine: Sendable {
             // Organization fields
             addToken(contact.organizationName, field: .organization, to: &tokens)
             addToken(contact.jobTitle, field: .jobTitle, to: &tokens)
+
+            // Tags
+            if let contactTags = tags[contact.identifier] {
+                for tag in contactTags {
+                    addToken(tag, field: .tag, to: &tokens)
+                }
+            }
 
             // Email addresses
             for email in contact.emailAddresses {
@@ -76,11 +88,13 @@ final class SearchEngine: Sendable {
                 }
             }
 
-            // Postal addresses — index city and state separately
+            // Postal addresses — index street, city, state, and zip
             for address in contact.postalAddresses {
                 let postal = address.value
+                addToken(postal.street, field: .address, to: &tokens)
                 addToken(postal.city, field: .address, to: &tokens)
                 addToken(postal.state, field: .address, to: &tokens)
+                addToken(postal.postalCode, field: .address, to: &tokens)
             }
 
             // Notes
@@ -120,6 +134,7 @@ final class SearchEngine: Sendable {
         for searchable in index {
             var bestScore: Double = 0
             var bestField: SearchField = .notes
+            var bestValue: String?
 
             for token in searchable.tokens {
                 let matchScore = score(
@@ -130,6 +145,7 @@ final class SearchEngine: Sendable {
                 if matchScore > bestScore {
                     bestScore = matchScore
                     bestField = token.field
+                    bestValue = token.value
                 }
             }
 
@@ -138,7 +154,8 @@ final class SearchEngine: Sendable {
                     contact: wrapper,
                     score: bestScore,
                     matchedField: bestField,
-                    matchedSubstring: nil
+                    matchedSubstring: nil,
+                    matchedValue: bestValue
                 ))
             }
         }

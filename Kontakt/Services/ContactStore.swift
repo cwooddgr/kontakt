@@ -22,10 +22,10 @@ final class ContactStore {
     /// The current authorization status for contacts.
     private(set) var authorizationStatus: CNAuthorizationStatus = .notDetermined
 
-    /// Identifiers of pinned contacts, persisted in UserDefaults.
-    var pinnedContactIDs: Set<String> {
+    /// Identifiers of starred contacts, persisted in UserDefaults.
+    var starredContactIDs: Set<String> {
         didSet {
-            UserDefaults.standard.set(Array(pinnedContactIDs), forKey: Self.pinnedContactsKey)
+            UserDefaults.standard.set(Array(starredContactIDs), forKey: Self.starredContactsKey)
         }
     }
 
@@ -39,7 +39,8 @@ final class ContactStore {
 
     // MARK: - Constants
 
-    private static let pinnedContactsKey = "pinnedContactIdentifiers"
+    private static let starredContactsKey = "starredContactIdentifiers"
+    private static let legacyPinnedContactsKey = "pinnedContactIdentifiers"
 
     /// Minimal keys needed for list display.
     static let listFetchKeys: [CNKeyDescriptor] = [
@@ -48,6 +49,8 @@ final class ContactStore {
         CNContactFamilyNameKey as CNKeyDescriptor,
         CNContactOrganizationNameKey as CNKeyDescriptor,
         CNContactThumbnailImageDataKey as CNKeyDescriptor,
+        CNContactPhoneNumbersKey as CNKeyDescriptor,
+        CNContactEmailAddressesKey as CNKeyDescriptor,
     ]
 
     /// Full keys needed for detail / card view.
@@ -82,9 +85,16 @@ final class ContactStore {
     // MARK: - Initialization
 
     init() {
-        // Restore pinned contacts from UserDefaults.
-        let stored = UserDefaults.standard.stringArray(forKey: Self.pinnedContactsKey) ?? []
-        self.pinnedContactIDs = Set(stored)
+        // Migrate legacy "pinnedContactIdentifiers" to "starredContactIdentifiers" if needed.
+        let defaults = UserDefaults.standard
+        if defaults.object(forKey: Self.starredContactsKey) == nil,
+           let legacy = defaults.stringArray(forKey: Self.legacyPinnedContactsKey) {
+            defaults.set(legacy, forKey: Self.starredContactsKey)
+            defaults.removeObject(forKey: Self.legacyPinnedContactsKey)
+        }
+
+        let stored = defaults.stringArray(forKey: Self.starredContactsKey) ?? []
+        self.starredContactIDs = Set(stored)
     }
 
     // MARK: - Authorization
@@ -169,7 +179,7 @@ final class ContactStore {
 
     // MARK: - Deleting
 
-    /// Deletes a contact by identifier from the contact store.
+    /// Deletes a contact by identifier from the contact store (hard delete).
     func deleteContact(identifier: String) throws {
         guard let contact = fetchContactDetail(identifier: identifier) else { return }
         let mutableContact = contact.mutableCopy() as! CNMutableContact
@@ -177,24 +187,47 @@ final class ContactStore {
         request.delete(mutableContact)
         try cnContactStore.execute(request)
 
-        // Remove from pinned if necessary.
-        pinnedContactIDs.remove(identifier)
+        // Remove from starred if necessary.
+        starredContactIDs.remove(identifier)
     }
 
-    // MARK: - Pinning
+    /// Soft-deletes a contact: archives it via RecentlyDeletedStore, cleans up tags and
+    /// interaction logs, then removes from contacts.
+    func softDeleteContact(
+        identifier: String,
+        recentlyDeletedStore: RecentlyDeletedStore,
+        tagStore: TagStore,
+        interactionLogStore: InteractionLogStore
+    ) throws {
+        // Fetch full contact with all detail keys for vCard serialization.
+        guard let contact = fetchContactDetail(identifier: identifier) else { return }
 
-    /// Toggles the pinned state of a contact.
-    func togglePin(identifier: String) {
-        if pinnedContactIDs.contains(identifier) {
-            pinnedContactIDs.remove(identifier)
+        recentlyDeletedStore.softDelete(contact: contact)
+
+        let mutableContact = contact.mutableCopy() as! CNMutableContact
+        let request = CNSaveRequest()
+        request.delete(mutableContact)
+        try cnContactStore.execute(request)
+
+        starredContactIDs.remove(identifier)
+        tagStore.removeAllTags(for: identifier)
+        interactionLogStore.removeAllEntries(for: identifier)
+    }
+
+    // MARK: - Starring
+
+    /// Toggles the starred state of a contact.
+    func toggleStar(identifier: String) {
+        if starredContactIDs.contains(identifier) {
+            starredContactIDs.remove(identifier)
         } else {
-            pinnedContactIDs.insert(identifier)
+            starredContactIDs.insert(identifier)
         }
     }
 
-    /// Returns whether a contact is currently pinned.
-    func isPinned(identifier: String) -> Bool {
-        pinnedContactIDs.contains(identifier)
+    /// Returns whether a contact is currently starred.
+    func isStarred(identifier: String) -> Bool {
+        starredContactIDs.contains(identifier)
     }
 
     // MARK: - Container Info

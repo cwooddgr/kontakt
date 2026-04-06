@@ -11,6 +11,8 @@ struct ContactWrapper: Identifiable, Hashable, Equatable, Sendable {
     let familyName: String
     let organizationName: String
     let thumbnailImageData: Data?
+    let primaryPhone: String?
+    let primaryEmail: String?
 
     // MARK: - Computed Properties
 
@@ -41,12 +43,28 @@ struct ContactWrapper: Identifiable, Hashable, Equatable, Sendable {
 
     /// Creates a ContactWrapper from a CNContact that was fetched with list-tier keys.
     static func from(_ contact: CNContact) -> ContactWrapper {
-        ContactWrapper(
+        let phone: String? = if contact.isKeyAvailable(CNContactPhoneNumbersKey),
+                                let first = contact.phoneNumbers.first {
+            first.value.stringValue
+        } else {
+            nil
+        }
+
+        let email: String? = if contact.isKeyAvailable(CNContactEmailAddressesKey),
+                                let first = contact.emailAddresses.first {
+            first.value as String
+        } else {
+            nil
+        }
+
+        return ContactWrapper(
             identifier: contact.identifier,
             givenName: contact.givenName,
             familyName: contact.familyName,
             organizationName: contact.organizationName,
-            thumbnailImageData: contact.thumbnailImageData
+            thumbnailImageData: contact.thumbnailImageData,
+            primaryPhone: phone,
+            primaryEmail: email
         )
     }
 }

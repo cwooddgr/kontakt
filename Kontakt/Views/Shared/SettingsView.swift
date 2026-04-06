@@ -7,6 +7,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(ContactStore.self) private var contactStore
     @Environment(AppState.self) private var appState
+    @Environment(RecentlyDeletedStore.self) private var recentlyDeletedStore
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage("myCardContactIdentifier") private var myCardContactIdentifier: String = ""
@@ -17,6 +18,7 @@ struct SettingsView: View {
                 displaySection
                 myCardSection
                 contactsSection
+                dataSection
                 aboutSection
             }
             .listStyle(.insetGrouped)
@@ -94,6 +96,54 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Data Section
+
+    private var dataSection: some View {
+        Section("Data") {
+            Button {
+                dismiss()
+                // Delay sheet presentation to avoid dismiss conflict
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    appState.activeSheet = .tagBrowser
+                }
+            } label: {
+                HStack {
+                    Text("Tags")
+                        .foregroundStyle(Color.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.textTertiary)
+                }
+            }
+
+            Button {
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    appState.activeSheet = .recentlyDeleted
+                }
+            } label: {
+                HStack {
+                    Text("Recently Deleted")
+                        .foregroundStyle(Color.textPrimary)
+                    Spacer()
+                    if recentlyDeletedStore.deletedContacts.count > 0 {
+                        Text("\(recentlyDeletedStore.deletedContacts.count)")
+                            .font(.label)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, KSpacing.s)
+                            .padding(.vertical, 2)
+                            .background(Color.red)
+                            .clipShape(Capsule())
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.textTertiary)
+                }
+            }
+        }
+    }
+
     // MARK: - About Section
 
     private var aboutSection: some View {
@@ -142,4 +192,5 @@ extension AppState.DensityMode {
     SettingsView()
         .environment(ContactStore())
         .environment(AppState())
+        .environment(RecentlyDeletedStore())
 }

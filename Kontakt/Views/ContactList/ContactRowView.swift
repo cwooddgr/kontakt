@@ -4,10 +4,12 @@ import SwiftUI
 ///
 /// Adapts between compact mode (no photo, ~52pt) and standard mode (40x40 photo, ~60pt)
 /// based on the current density setting in AppState. The entire row is tappable via
-/// NavigationLink. A horizontal swipe gesture reveals a pin/unpin (leading) action button.
+/// NavigationLink. A horizontal swipe gesture reveals a star/unstar action (leading)
+/// and a delete action (trailing).
 struct ContactRowView: View {
     let contact: ContactWrapper
-    let isPinned: Bool
+    let isStarred: Bool
+    var onDelete: (() -> Void)?
 
     @Environment(AppState.self) private var appState
     @Environment(ContactStore.self) private var contactStore
@@ -18,31 +20,52 @@ struct ContactRowView: View {
     private let actionButtonWidth: CGFloat = 72
 
     private enum SwipeDirection {
-        case none, leading
+        case none, leading, trailing
     }
 
     var body: some View {
-        ZStack(alignment: .leading) {
-            // Leading action (pin/unpin) — revealed when swiping right
+        ZStack {
+            // Leading action (star/unstar) -- revealed when swiping right
             HStack(spacing: 0) {
                 Button {
-                    togglePin()
+                    toggleStar()
                     resetSwipe()
                 } label: {
                     VStack(spacing: KSpacing.xs) {
-                        Image(systemName: isPinned ? "pin.slash" : "pin")
+                        Image(systemName: isStarred ? "star.fill" : "star")
                             .font(.system(size: 17, weight: .medium))
-                        Text(isPinned ? "Unpin" : "Pin")
+                        Text(isStarred ? "Unstar" : "Star")
                             .font(.system(size: 11, weight: .medium))
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: actionButtonWidth, maxHeight: .infinity)
                     .background(Color.accentSlateBlue)
                 }
-                .accessibilityLabel(isPinned ? "Unpin \(contact.fullName)" : "Pin \(contact.fullName)")
+                .accessibilityLabel(isStarred ? "Unstar \(contact.fullName)" : "Star \(contact.fullName)")
                 Spacer()
             }
             .opacity(activeSwipe == .leading ? 1 : 0)
+
+            // Trailing action (delete) -- revealed when swiping left
+            HStack(spacing: 0) {
+                Spacer()
+                Button {
+                    resetSwipe()
+                    onDelete?()
+                } label: {
+                    VStack(spacing: KSpacing.xs) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 17, weight: .medium))
+                        Text("Delete")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: actionButtonWidth, maxHeight: .infinity)
+                    .background(Color.red)
+                }
+                .accessibilityLabel("Delete \(contact.fullName)")
+            }
+            .opacity(activeSwipe == .trailing ? 1 : 0)
 
             // Main row content
             NavigationLink(value: contact.identifier) {
@@ -101,15 +124,21 @@ struct ContactRowView: View {
             .onChanged { value in
                 let horizontal = value.translation.width
 
-                // Only allow leading (right) swipe for pin/unpin
-                if activeSwipe == .none && horizontal > 0 {
-                    activeSwipe = .leading
+                // Determine direction on first movement
+                if activeSwipe == .none {
+                    if horizontal > 0 {
+                        activeSwipe = .leading
+                    } else if horizontal < 0 && onDelete != nil {
+                        activeSwipe = .trailing
+                    }
                 }
 
                 // Clamp the offset within bounds
                 switch activeSwipe {
                 case .leading:
                     swipeOffset = min(max(horizontal, 0), actionButtonWidth)
+                case .trailing:
+                    swipeOffset = max(min(horizontal, 0), -actionButtonWidth)
                 case .none:
                     break
                 }
@@ -123,6 +152,12 @@ struct ContactRowView: View {
                     case .leading:
                         if horizontal > threshold {
                             swipeOffset = actionButtonWidth
+                        } else {
+                            resetSwipe()
+                        }
+                    case .trailing:
+                        if horizontal < -threshold {
+                            swipeOffset = -actionButtonWidth
                         } else {
                             resetSwipe()
                         }
@@ -142,9 +177,9 @@ struct ContactRowView: View {
         }
     }
 
-    private func togglePin() {
+    private func toggleStar() {
         HapticManager.mediumImpact()
-        contactStore.togglePin(identifier: contact.identifier)
+        contactStore.toggleStar(identifier: contact.identifier)
     }
 }
 
@@ -159,9 +194,12 @@ struct ContactRowView: View {
                     givenName: "Alice",
                     familyName: "Johnson",
                     organizationName: "Acme Corp",
-                    thumbnailImageData: nil
+                    thumbnailImageData: nil,
+                    primaryPhone: nil,
+                    primaryEmail: nil
                 ),
-                isPinned: false
+                isStarred: false,
+                onDelete: { print("Delete Alice") }
             )
             ContactRowView(
                 contact: ContactWrapper(
@@ -169,9 +207,12 @@ struct ContactRowView: View {
                     givenName: "Bob",
                     familyName: "Williams",
                     organizationName: "",
-                    thumbnailImageData: nil
+                    thumbnailImageData: nil,
+                    primaryPhone: nil,
+                    primaryEmail: nil
                 ),
-                isPinned: true
+                isStarred: true,
+                onDelete: { print("Delete Bob") }
             )
         }
     }

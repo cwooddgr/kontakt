@@ -9,6 +9,8 @@ final class AppState {
         case newContact
         case settings
         case cleanup
+        case tagBrowser
+        case recentlyDeleted
 
         var id: Self { self }
     }
@@ -30,6 +32,12 @@ final class AppState {
 
     /// Whether the search field is currently active.
     var isSearchActive: Bool = false
+
+    /// Whether the user is browsing the full A-Z contact list.
+    var isBrowsingAll: Bool = false
+
+    /// When set, the contact list should search for this tag and then clear the value.
+    var pendingSearchTag: String?
 
     /// Display density for the contact list. Defaults to compact. Persisted in UserDefaults.
     var densityMode: DensityMode {

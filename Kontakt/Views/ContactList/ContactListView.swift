@@ -1,44 +1,43 @@
 import SwiftUI
 import Contacts
 
-/// The primary screen of Kontakt. "The list IS the app."
+/// The primary screen of People. Three states: Ready, Searching, and Browse All.
 ///
-/// Displays all contacts grouped into a PINNED section and A-Z letter sections.
-/// Supports search, section index scrubbing, and toolbar actions for cleanup,
-/// new contact creation, and settings.
+/// **Ready** (default): search field focused with keyboard up, stars grid below.
+/// **Searching**: live results as user types.
+/// **Browse All**: full A-Z list with section index scrubber.
 struct ContactListView: View {
     @Environment(ContactStore.self) private var contactStore
     @Environment(AppState.self) private var appState
+    @Environment(RecentlyDeletedStore.self) private var recentlyDeletedStore
+    @Environment(TagStore.self) private var tagStore
+    @Environment(InteractionLogStore.self) private var interactionLogStore
 
     @State private var searchText = ""
     @State private var searchEngine = SearchEngine()
     @State private var searchIndex: [SearchEngine.SearchableContact] = []
     @State private var searchResults: [SearchResult] = []
+    @FocusState private var isSearchFieldFocused: Bool
+
+    @State private var contactToDelete: ContactWrapper?
+    @State private var showDeleteConfirmation = false
+
+    // MARK: - Body
 
     var body: some View {
         Group {
             if contactStore.contacts.isEmpty {
                 emptyState
+            } else if appState.isBrowsingAll {
+                browseAllView
             } else if !searchText.isEmpty {
                 searchResultsView
             } else {
-                contactList
+                readyState
             }
         }
         .navigationTitle("People")
-        .searchable(
-            text: $searchText,
-            isPresented: Bindable(appState).isSearchActive,
-            prompt: "Search contacts..."
-        )
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    appState.activeSheet = .cleanup
-                } label: {
-                    Text("Cleanup")
-                }
-            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
                     appState.activeSheet = .settings
@@ -56,28 +55,35 @@ struct ContactListView: View {
             ContactCardView(contactIdentifier: identifier)
         }
         .sheet(item: Bindable(appState).activeSheet) { sheet in
-            switch sheet {
-            case .newContact:
-                NewContactView()
-            case .settings:
-                SettingsView()
-            case .cleanup:
-                // Phase 2 — placeholder for now
-                NavigationStack {
-                    Text("Cleanup coming in Phase 2")
-                        .navigationTitle("Cleanup")
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Done") { appState.activeSheet = nil }
-                            }
-                        }
+            sheetContent(for: sheet)
+        }
+        .alert("Delete Contact", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                if let contact = contactToDelete {
+                    deleteContact(contact)
                 }
+            }
+            Button("Cancel", role: .cancel) {
+                contactToDelete = nil
+            }
+        } message: {
+            if let contact = contactToDelete {
+                Text("Are you sure you want to delete \(contact.fullName)? This contact will be recoverable for 30 days.")
             }
         }
         .onChange(of: searchText) { _, _ in
             performSearch()
         }
+        .onChange(of: appState.pendingSearchTag) { _, newValue in
+            if let tag = newValue {
+                searchText = tag
+                appState.pendingSearchTag = nil
+            }
+        }
         .onChange(of: contactStore.contacts) { _, _ in
+            rebuildSearchIndex()
+        }
+        .onChange(of: tagStore.contactTags) { _, _ in
             rebuildSearchIndex()
         }
         .task {
@@ -86,77 +92,171 @@ struct ContactListView: View {
         }
     }
 
-    // MARK: - Contact List
+    // MARK: - State 1: Ready State
 
-    private var contactList: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    // PINNED section
-                    if !pinnedContacts.isEmpty {
-                        sectionHeader("PINNED")
-                            .id("section_PINNED")
+    private var readyState: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: KSpacing.l) {
+                searchField
 
-                        ForEach(pinnedContacts) { contact in
-                            ContactRowView(contact: contact, isPinned: true)
-                        }
-
-                        Spacer()
-                            .frame(height: KSpacing.xxl)
+                StarsGridView(onBrowseAll: {
+                    withAnimation {
+                        appState.isBrowsingAll = true
                     }
-
-                    // A-Z sections
-                    ForEach(letterGroups, id: \.letter) { group in
-                        sectionHeader(group.letter)
-                            .id("section_\(group.letter)")
-
-                        ForEach(group.contacts) { contact in
-                            ContactRowView(
-                                contact: contact,
-                                isPinned: contactStore.isPinned(identifier: contact.identifier)
-                            )
-                        }
-
-                        Spacer()
-                            .frame(height: KSpacing.l)
-                    }
-                }
-                .padding(.trailing, 28) // Reserve space for section index
+                })
             }
-            .overlay(alignment: .trailing) {
-                SectionIndexView(
-                    letters: availableLetters,
-                    onSelectLetter: { letter in
-                        withAnimation {
-                            proxy.scrollTo("section_\(letter)", anchor: .top)
-                        }
-                    }
-                )
-            }
+            .padding(.top, KSpacing.m)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .onAppear {
+            isSearchFieldFocused = true
         }
     }
 
-    // MARK: - Search Results
+    // MARK: - Search Field
 
-    private var searchResultsView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(searchResults) { result in
-                    ContactRowView(
-                        contact: result.contact,
-                        isPinned: contactStore.isPinned(identifier: result.contact.identifier)
-                    )
-                }
+    private var searchField: some View {
+        HStack(spacing: KSpacing.s) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Color.textTertiary)
+                .font(.system(size: 16))
 
-                if !searchResults.isEmpty {
-                    Text("\(searchResults.count) result\(searchResults.count == 1 ? "" : "s")")
-                        .font(.label)
+            TextField("Search people...", text: $searchText)
+                .font(.search)
+                .foregroundStyle(Color.textPrimary)
+                .focused($isSearchFieldFocused)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Color.textTertiary)
-                        .padding(.horizontal, KSpacing.xl)
-                        .padding(.top, KSpacing.m)
+                        .font(.system(size: 16))
                 }
             }
-            .animation(.easeInOut(duration: 0.15), value: searchResults.map(\.contact.identifier))
+        }
+        .padding(.horizontal, KSpacing.m)
+        .padding(.vertical, KSpacing.s + 2)
+        .background(Color.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: KRadius.m))
+        .padding(.horizontal, KSpacing.xl)
+    }
+
+    // MARK: - State 2: Search Results
+
+    private var searchResultsView: some View {
+        VStack(spacing: 0) {
+            searchField
+                .padding(.top, KSpacing.m)
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(searchResults) { result in
+                        SearchResultRowView(
+                            result: result,
+                            isStarred: contactStore.isStarred(identifier: result.contact.identifier),
+                            onDelete: {
+                                contactToDelete = result.contact
+                                showDeleteConfirmation = true
+                            }
+                        )
+                    }
+
+                    if !searchResults.isEmpty {
+                        Text("\(searchResults.count) result\(searchResults.count == 1 ? "" : "s")")
+                            .font(.label)
+                            .foregroundStyle(Color.textTertiary)
+                            .padding(.horizontal, KSpacing.xl)
+                            .padding(.top, KSpacing.m)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.15), value: searchResults.map(\.contact.identifier))
+            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+    }
+
+    // MARK: - State 3: Browse All
+
+    private var browseAllView: some View {
+        VStack(spacing: 0) {
+            searchField
+                .padding(.top, KSpacing.m)
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        // Back button
+                        Button {
+                            withAnimation {
+                                appState.isBrowsingAll = false
+                                searchText = ""
+                            }
+                        } label: {
+                            HStack(spacing: KSpacing.xs) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 14, weight: .medium))
+                                Text("Back")
+                                    .font(.kBody)
+                            }
+                            .foregroundStyle(Color.accentSlateBlue)
+                            .padding(.horizontal, KSpacing.xl)
+                            .padding(.vertical, KSpacing.m)
+                        }
+
+                        if !searchText.isEmpty {
+                            // Show filtered results in browse mode
+                            ForEach(searchResults) { result in
+                                ContactRowView(
+                                    contact: result.contact,
+                                    isStarred: contactStore.isStarred(identifier: result.contact.identifier),
+                                    onDelete: {
+                                        contactToDelete = result.contact
+                                        showDeleteConfirmation = true
+                                    }
+                                )
+                            }
+                        } else {
+                            // Full A-Z list
+                            ForEach(letterGroups, id: \.letter) { group in
+                                sectionHeader(group.letter)
+                                    .id("section_\(group.letter)")
+
+                                ForEach(group.contacts) { contact in
+                                    ContactRowView(
+                                        contact: contact,
+                                        isStarred: contactStore.isStarred(identifier: contact.identifier),
+                                        onDelete: {
+                                            contactToDelete = contact
+                                            showDeleteConfirmation = true
+                                        }
+                                    )
+                                }
+
+                                Spacer()
+                                    .frame(height: KSpacing.l)
+                            }
+                        }
+                    }
+                    .padding(.trailing, searchText.isEmpty ? 28 : 0)
+                }
+                .overlay(alignment: .trailing) {
+                    if searchText.isEmpty {
+                        SectionIndexView(
+                            letters: availableLetters,
+                            onSelectLetter: { letter in
+                                withAnimation {
+                                    proxy.scrollTo("section_\(letter)", anchor: .top)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 
@@ -190,12 +290,36 @@ struct ContactListView: View {
             .padding(.bottom, KSpacing.s)
     }
 
-    // MARK: - Data Helpers
+    // MARK: - Sheet Content
 
-    /// Contacts whose identifiers are in the pinned set, preserving the list's sort order.
-    private var pinnedContacts: [ContactWrapper] {
-        contactStore.contacts.filter { contactStore.isPinned(identifier: $0.identifier) }
+    @ViewBuilder
+    private func sheetContent(for sheet: AppState.ActiveSheet) -> some View {
+        switch sheet {
+        case .newContact:
+            NewContactView()
+        case .settings:
+            SettingsView()
+        case .cleanup:
+            NavigationStack {
+                Text("Cleanup coming in Phase 2")
+                    .navigationTitle("Cleanup")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Done") { appState.activeSheet = nil }
+                        }
+                    }
+            }
+        case .tagBrowser:
+            TagBrowserView(onSelectTag: { tag in
+                searchText = tag
+                appState.activeSheet = nil
+            })
+        case .recentlyDeleted:
+            RecentlyDeletedView()
+        }
     }
+
+    // MARK: - Data Helpers
 
     /// All contacts grouped by the first character of their display name, sorted alphabetically.
     private var letterGroups: [LetterGroup] {
@@ -211,7 +335,6 @@ struct ContactListView: View {
 
         return grouped.keys
             .sorted { lhs, rhs in
-                // Put "#" at the end
                 if lhs == "#" { return false }
                 if rhs == "#" { return true }
                 return lhs < rhs
@@ -224,18 +347,21 @@ struct ContactListView: View {
         letterGroups.map(\.letter)
     }
 
+    // MARK: - Search
+
     /// Rebuilds the search index on a background thread whenever contacts change.
     private func rebuildSearchIndex() {
         let keys = SearchEngine.indexFetchKeys
         let store = CNContactStore()
         let engine = searchEngine
+        let currentTags = tagStore.contactTags
         Task.detached {
             var cnContacts: [CNContact] = []
             let request = CNContactFetchRequest(keysToFetch: keys)
             try? store.enumerateContacts(with: request) { contact, _ in
                 cnContacts.append(contact)
             }
-            let newIndex = engine.buildIndex(from: cnContacts)
+            let newIndex = engine.buildIndex(from: cnContacts, tags: currentTags)
             await MainActor.run {
                 searchIndex = newIndex
             }
@@ -254,6 +380,23 @@ struct ContactListView: View {
             contacts: contactStore.contacts
         )
     }
+
+    // MARK: - Deletion
+
+    private func deleteContact(_ contact: ContactWrapper) {
+        do {
+            try contactStore.softDeleteContact(
+                identifier: contact.identifier,
+                recentlyDeletedStore: recentlyDeletedStore,
+                tagStore: tagStore,
+                interactionLogStore: interactionLogStore
+            )
+            contactToDelete = nil
+        } catch {
+            // In a future iteration, surface an error alert.
+            contactToDelete = nil
+        }
+    }
 }
 
 // MARK: - Letter Group
@@ -271,4 +414,7 @@ private struct LetterGroup: Equatable {
     }
     .environment(ContactStore())
     .environment(AppState())
+    .environment(RecentlyDeletedStore())
+    .environment(TagStore())
+    .environment(InteractionLogStore())
 }

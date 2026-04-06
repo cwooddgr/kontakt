@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Displays contact notes with a quick-append feature.
+/// Displays the contact's notes field with tap-to-edit inline editing.
 ///
-/// Shows the notes content below a separator line (the only separator in the card).
-/// An "Append" button adds a timestamped entry. If no notes exist, a tappable
-/// placeholder invites the user to add one.
+/// Simplified from the original version: the "Append" flow has been removed in
+/// favor of the InteractionLogView. This is now a straightforward display + edit
+/// component for CNContact.note.
 struct NotesView: View {
     let notes: String
     let onSave: (String) -> Void
@@ -15,16 +15,6 @@ struct NotesView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: KSpacing.m) {
-            // Separator -- the ONLY one in the contact card
-            Rectangle()
-                .fill(Color(UIColor.separator))
-                .frame(height: 0.5)
-
-            Text("NOTES")
-                .font(.labelCaps)
-                .tracking(0.5)
-                .foregroundStyle(Color.textTertiary)
-
             if isEditing {
                 editor
             } else {
@@ -44,7 +34,7 @@ struct NotesView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    beginEditing(withPrefix: false)
+                    beginEditing()
                 }
         } else {
             Text(notes)
@@ -52,18 +42,10 @@ struct NotesView: View {
                 .foregroundStyle(Color.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack {
-                Spacer()
-                Button {
-                    beginEditing(withPrefix: true)
-                } label: {
-                    Text("+ Append")
-                        .font(.action)
-                        .foregroundStyle(Color.accentSlateBlue)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    beginEditing()
                 }
-                .buttonStyle(.plain)
-            }
         }
     }
 
@@ -96,14 +78,8 @@ struct NotesView: View {
 
     // MARK: - Actions
 
-    private func beginEditing(withPrefix: Bool) {
-        if withPrefix {
-            let dateString = Self.todayString()
-            editText = notes + "\n[\(dateString)] "
-        } else {
-            let dateString = Self.todayString()
-            editText = "[\(dateString)] "
-        }
+    private func beginEditing() {
+        editText = notes
         isEditing = true
         // Delay focus so the TextEditor is in the view hierarchy
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -119,23 +95,11 @@ struct NotesView: View {
 
     private func saveEditing() {
         let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            cancelEditing()
-            return
-        }
         onSave(trimmed)
         isEditing = false
         editText = ""
         editorFocused = false
         HapticManager.success()
-    }
-
-    // MARK: - Date Formatting
-
-    private static func todayString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
 }
 

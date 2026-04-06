@@ -12,7 +12,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "John",
             familyName: "Smith",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.fullName, "John Smith")
@@ -24,7 +26,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "John",
             familyName: "",
             organizationName: "Acme Corp",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.fullName, "John")
@@ -36,7 +40,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "",
             familyName: "Smith",
             organizationName: "Acme Corp",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.fullName, "Smith")
@@ -48,7 +54,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "",
             familyName: "",
             organizationName: "Acme Corp",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(
@@ -63,7 +71,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "",
             familyName: "",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.fullName, "")
@@ -77,7 +87,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "John",
             familyName: "Smith",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.initials, "JS")
@@ -89,7 +101,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "John",
             familyName: "",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.initials, "J")
@@ -101,7 +115,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "john",
             familyName: "smith",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(
@@ -116,7 +132,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "",
             familyName: "",
             organizationName: "Acme Corp",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(
@@ -131,7 +149,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "",
             familyName: "",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(
@@ -181,7 +201,9 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "Test",
             familyName: "User",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper.id, "unique-id-123")
@@ -194,14 +216,18 @@ final class ContactWrapperTests: XCTestCase {
             givenName: "John",
             familyName: "Smith",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
         let wrapper2 = ContactWrapper(
             identifier: "same-id",
             givenName: "John",
             familyName: "Smith",
             organizationName: "",
-            thumbnailImageData: nil
+            thumbnailImageData: nil,
+            primaryPhone: nil,
+            primaryEmail: nil
         )
 
         XCTAssertEqual(wrapper1, wrapper2)

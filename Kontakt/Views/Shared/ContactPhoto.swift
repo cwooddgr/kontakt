@@ -1,6 +1,9 @@
 import SwiftUI
 
 /// Reusable contact photo view that shows the contact's image or initials fallback.
+///
+/// When displayed at large sizes (>= 80pt) without a photo, a subtle "Add photo"
+/// prompt appears below the initials circle.
 struct ContactPhoto: View {
     /// Raw image data (e.g. from CNContact.thumbnailImageData).
     let imageData: Data?
@@ -8,12 +11,26 @@ struct ContactPhoto: View {
     let givenName: String
     /// The contact's family (last) name.
     let familyName: String
-    /// Display size. Common values: 40 (list), 56 (card).
+    /// Display size. Common values: 40 (list), 56 (card), 120 (person header).
     var size: CGFloat = 40
+    /// Whether to show the "Add photo" prompt for large sizes without a photo.
+    var showAddPhotoPrompt: Bool = true
 
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+        VStack(spacing: KSpacing.s) {
+            photoCircle
+
+            if showAddPhotoPrompt && size >= 80 && imageData == nil {
+                Text("Add photo")
+                    .font(.label)
+                    .foregroundStyle(Color.textTertiary)
+            }
+        }
+    }
+
+    private var photoCircle: some View {
         Group {
             if let imageData, let uiImage = UIImage(data: imageData) {
                 Image(uiImage: uiImage)
