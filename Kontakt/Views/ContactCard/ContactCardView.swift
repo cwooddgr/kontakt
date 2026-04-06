@@ -338,7 +338,7 @@ struct ContactCardView: View {
                 .tracking(0.5)
                 .foregroundStyle(Color.textTertiary)
 
-            NotesView(notes: contact.note) { updatedNotes in
+            NotesView(notes: contact.isKeyAvailable(CNContactNoteKey) ? contact.note : "") { updatedNotes in
                 saveNotes(updatedNotes)
             }
         }

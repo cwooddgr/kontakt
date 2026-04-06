@@ -324,7 +324,7 @@ struct MyCardView: View {
             case .photo:
                 return contact.imageData != nil
             case .note:
-                return !contact.note.isEmpty
+                return contact.isKeyAvailable(CNContactNoteKey) && !contact.note.isEmpty
             }
         }
     }

@@ -789,7 +789,7 @@ struct FullEditView: View {
         }
 
         // Populate notes
-        notes = contact.note
+        notes = contact.isKeyAvailable(CNContactNoteKey) ? contact.note : ""
     }
 
     // MARK: - Add Field
