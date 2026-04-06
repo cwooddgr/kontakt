@@ -74,7 +74,7 @@ final class ContactStore {
         CNContactDatesKey as CNKeyDescriptor,
         CNContactBirthdayKey as CNKeyDescriptor,
         CNContactRelationsKey as CNKeyDescriptor,
-        CNContactNoteKey as CNKeyDescriptor,
+        // CNContactNoteKey excluded — requires com.apple.developer.contacts.notes entitlement
         CNContactImageDataKey as CNKeyDescriptor,
         CNContactImageDataAvailableKey as CNKeyDescriptor,
         CNContactThumbnailImageDataKey as CNKeyDescriptor,
