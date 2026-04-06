@@ -75,38 +75,109 @@ enum RegexParsingService: Sendable {
             return emptyContact
         }
 
-        var remainingText = trimmed
+        // Normalize line endings.
+        let normalized = trimmed
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
 
-        // Step 1: Extract emails (most unambiguous pattern).
-        let emails = extractEmails(from: remainingText)
-        for email in emails {
-            remainingText = remainingText.replacingOccurrences(of: email, with: "")
+        let lines = normalized.components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        // Phase 1: Extract emails and phones from ALL lines.
+        var allEmails: [String] = []
+        var allPhones: [String] = []
+        var strippedLines: [String] = []
+
+        for line in lines {
+            var remaining = line
+
+            let emails = extractEmails(from: remaining)
+            allEmails.append(contentsOf: emails)
+            for email in emails {
+                remaining = remaining.replacingOccurrences(of: email, with: "")
+            }
+
+            let phones = extractPhoneNumbers(from: remaining)
+            allPhones.append(contentsOf: phones)
+            for phone in phones {
+                remaining = remaining.replacingOccurrences(of: phone, with: "")
+            }
+
+            remaining = remaining
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: CharacterSet(charactersIn: ",;|"))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if !remaining.isEmpty {
+                strippedLines.append(remaining)
+            }
         }
 
-        // Step 2: Extract phone numbers.
-        let phones = extractPhoneNumbers(from: remainingText)
-        for phone in phones {
-            remainingText = remainingText.replacingOccurrences(of: phone, with: "")
+        // Phase 2: Classify stripped lines.
+        var nameLines: [String] = []
+        var addressLines: [String] = []
+        var otherLines: [String] = []
+
+        for line in strippedLines {
+            if looksLikeAddress(line) {
+                addressLines.append(line)
+            } else if nameLines.isEmpty && looksLikeName(line) {
+                nameLines.append(line)
+            } else {
+                otherLines.append(line)
+            }
         }
 
-        // Clean up remaining text: collapse whitespace, trim separators.
-        remainingText = remainingText
-            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .trimmingCharacters(in: CharacterSet(charactersIn: ",;|"))
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Phase 3: Parse address from address lines.
+        var parsedAddress: ParsedAddress?
+        if !addressLines.isEmpty {
+            let addressText = addressLines.joined(separator: "\n")
+            let result = parseAddress(addressText)
+            if !result.street.value.isEmpty || !result.city.value.isEmpty {
+                if isAllCaps(addressText) {
+                    parsedAddress = ParsedAddress(
+                        street: ParsedAddressField(value: titleCased(result.street.value), confidence: result.street.confidence),
+                        city: ParsedAddressField(value: titleCased(result.city.value), confidence: result.city.confidence),
+                        state: result.state,
+                        postalCode: result.postalCode,
+                        countryCode: result.countryCode
+                    )
+                } else {
+                    parsedAddress = result
+                }
+            }
+        }
 
-        // Step 3: Extract name prefix.
-        let (prefix, afterPrefix) = extractNamePrefix(from: remainingText)
-        remainingText = afterPrefix
+        // Phase 4: Parse name.
+        let nameText: String
+        if !nameLines.isEmpty {
+            nameText = nameLines.joined(separator: " ")
+        } else if addressLines.isEmpty && otherLines.isEmpty && strippedLines.count == 1 {
+            // Single line, no address -- backward compatible path.
+            nameText = strippedLines[0]
+        } else if !otherLines.isEmpty {
+            // Use the first "other" line as potential name+title+org.
+            nameText = otherLines.removeFirst()
+        } else {
+            nameText = ""
+        }
 
-        // Step 4: Extract name using NaturalLanguage tagger.
-        let (givenName, familyName, afterName) = extractName(from: remainingText)
+        let normalizedName = isAllCaps(nameText) ? titleCased(nameText) : nameText
+        let (prefix, afterPrefix) = extractNamePrefix(from: normalizedName)
+        let (givenName, familyName, nameRemaining) = extractName(from: afterPrefix)
 
-        // Step 5: Extract company and title from remaining text.
-        let (jobTitle, organization) = extractTitleAndOrganization(from: afterName)
+        // Phase 5: Title and org from remaining.
+        var orgParts = otherLines
+        if !nameRemaining.isEmpty {
+            orgParts.insert(nameRemaining, at: 0)
+        }
+        let orgText = orgParts.joined(separator: ", ")
+        let normalizedOrgText = isAllCaps(orgText) ? titleCased(orgText) : orgText
+        let (jobTitle, organization) = extractTitleAndOrganization(from: normalizedOrgText)
 
-        // Determine name confidence: high if we got both names, medium if partial.
+        // Determine name confidence.
         let nameConf: FieldConfidence
         if !givenName.isEmpty && !familyName.isEmpty {
             nameConf = .high
@@ -122,8 +193,9 @@ enum RegexParsingService: Sendable {
             familyName: ParsedContactField(value: familyName, confidence: nameConf),
             jobTitle: jobTitle.isEmpty ? .low("") : .medium(jobTitle),
             organization: organization.isEmpty ? .low("") : .medium(organization),
-            phoneNumbers: phones.map { (value: $0, confidence: FieldConfidence.high) },
-            emailAddresses: emails.map { (value: $0, confidence: FieldConfidence.high) }
+            phoneNumbers: allPhones.map { (value: $0, confidence: FieldConfidence.high) },
+            emailAddresses: allEmails.map { (value: $0, confidence: FieldConfidence.high) },
+            address: parsedAddress
         )
     }
 }
@@ -417,29 +489,44 @@ private extension RegexParsingService {
         }
     }
 
-    /// Extracts a name prefix (Dr., Mr., Ms., Mrs., Prof., etc.) from the beginning of text.
+    /// Extracts a name prefix (Dr., Mr., Ms., Mrs., Miss, Prof., etc.) from the beginning of text.
+    /// Case-insensitive matching with canonical form output.
     /// Returns the prefix and the remaining text.
     static func extractNamePrefix(from input: String) -> (prefix: String, remaining: String) {
-        let prefixes = ["Dr.", "Dr", "Mr.", "Mr", "Mrs.", "Mrs", "Ms.", "Ms",
-                        "Prof.", "Prof", "Rev.", "Rev", "Hon.", "Hon",
-                        "Sgt.", "Sgt", "Cpl.", "Cpl", "Lt.", "Lt", "Capt.", "Capt"]
+        // Map lowercased prefix variants to their canonical display form.
+        let canonicalPrefixes: [String: String] = [
+            "dr.": "Dr.", "dr": "Dr.",
+            "mr.": "Mr.", "mr": "Mr.",
+            "mrs.": "Mrs.", "mrs": "Mrs.",
+            "ms.": "Ms.", "ms": "Ms.",
+            "miss.": "Miss", "miss": "Miss",
+            "prof.": "Prof.", "prof": "Prof.",
+            "rev.": "Rev.", "rev": "Rev.",
+            "hon.": "Hon.", "hon": "Hon.",
+            "sgt.": "Sgt.", "sgt": "Sgt.",
+            "cpl.": "Cpl.", "cpl": "Cpl.",
+            "lt.": "Lt.", "lt": "Lt.",
+            "capt.": "Capt.", "capt": "Capt.",
+        ]
+
+        // Sort keys longest first so "mrs." matches before "mr".
+        let sortedKeys = canonicalPrefixes.keys.sorted { $0.count > $1.count }
 
         let trimmed = input.trimmingCharacters(in: .whitespaces)
+        let lowered = trimmed.lowercased()
 
-        for prefix in prefixes {
-            if trimmed.hasPrefix(prefix),
-               trimmed.count > prefix.count {
-                let afterPrefix = trimmed[trimmed.index(trimmed.startIndex, offsetBy: prefix.count)...]
+        for key in sortedKeys {
+            if lowered.hasPrefix(key), trimmed.count > key.count {
+                let afterPrefix = trimmed[trimmed.index(trimmed.startIndex, offsetBy: key.count)...]
                 let next = afterPrefix.first
-                // Ensure the prefix is followed by a space or end of string.
+                // Ensure the prefix is followed by a space, period, or end of string.
                 if next == " " || next == "." || next == nil {
                     let remaining = afterPrefix
                         .trimmingCharacters(in: .whitespaces)
                         .trimmingCharacters(in: CharacterSet(charactersIn: "."))
                         .trimmingCharacters(in: .whitespaces)
-                    // Normalize prefix to include period.
-                    let normalizedPrefix = prefix.hasSuffix(".") ? prefix : prefix + "."
-                    return (normalizedPrefix, remaining)
+                    let canonical = canonicalPrefixes[key]!
+                    return (canonical, remaining)
                 }
             }
         }
@@ -549,6 +636,115 @@ private extension RegexParsingService {
         }
     }
 
+    /// Returns true if the string has 2+ letter characters and all of them are uppercase.
+    static func isAllCaps(_ input: String) -> Bool {
+        let letters = input.filter { $0.isLetter }
+        return letters.count >= 2 && letters.allSatisfy { $0.isUppercase }
+    }
+
+    /// Title-cases a string: splits on whitespace, lowercases each word, capitalizes the first letter.
+    /// Only intended to be called when `isAllCaps` is true; mixed-case input should be left unchanged.
+    static func titleCased(_ input: String) -> String {
+        input.components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .map { word in
+                let lowered = word.lowercased()
+                return lowered.prefix(1).uppercased() + lowered.dropFirst()
+            }
+            .joined(separator: " ")
+    }
+
+    /// Returns true if the line looks like a mailing/street address.
+    static func looksLikeAddress(_ line: String) -> Bool {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+
+        // PO BOX patterns
+        if trimmed.range(of: #"\bP\.?O\.?\s*BOX\b"#, options: [.regularExpression, .caseInsensitive]) != nil {
+            return true
+        }
+
+        // ZIP code pattern
+        if trimmed.range(of: #"\b\d{5}(-\d{4})?\b"#, options: .regularExpression) != nil {
+            return true
+        }
+
+        // Apt, Suite, Ste, Unit, # followed by alphanumeric
+        if trimmed.range(of: #"\b(?:Apt|Suite|Ste|Unit)\b\.?\s*#?\s*\w+"#, options: [.regularExpression, .caseInsensitive]) != nil {
+            return true
+        }
+        if trimmed.range(of: #"#\s*\w+"#, options: .regularExpression) != nil {
+            return true
+        }
+
+        // Street suffixes at word boundary
+        let streetSuffixes = [
+            "St", "Street", "Ave", "Avenue", "Blvd", "Boulevard",
+            "Dr", "Drive", "Ln", "Lane", "Rd", "Road", "Ct", "Court",
+            "Pl", "Place", "Way", "Cir", "Circle", "Pkwy", "Parkway",
+            "Hwy", "Highway",
+        ]
+        let suffixPattern = "\\b(" + streetSuffixes.joined(separator: "|") + ")\\.?\\b"
+        if trimmed.range(of: suffixPattern, options: [.regularExpression, .caseInsensitive]) != nil {
+            // Make sure it's not just a name prefix like "Dr." followed by a name.
+            // If line starts with a digit, it's definitely an address.
+            if trimmed.first?.isNumber == true {
+                return true
+            }
+            // If the match is a suffix like "St" or "Dr" but the line has no digits,
+            // be more cautious — only match multi-character suffixes or when preceded by text.
+            let longSuffixes = streetSuffixes.filter { $0.count > 2 }
+            let longPattern = "\\b(" + longSuffixes.joined(separator: "|") + ")\\.?\\b"
+            if trimmed.range(of: longPattern, options: [.regularExpression, .caseInsensitive]) != nil {
+                return true
+            }
+        }
+
+        // Starts with a street number followed by a word (and is NOT just a phone number)
+        if trimmed.range(of: #"^\d+\s+\w+"#, options: .regularExpression) != nil {
+            // Exclude phone number patterns (e.g., "512 555 1234")
+            if trimmed.range(of: #"^\d{3}\s+\d{3}\s+\d{4}$"#, options: .regularExpression) == nil {
+                return true
+            }
+        }
+
+        // City + state abbreviation + zip pattern
+        if trimmed.range(of: #"[A-Za-z]+\s+[A-Z]{2}\s+\d{5}"#, options: .regularExpression) != nil {
+            return true
+        }
+
+        return false
+    }
+
+    /// Returns true if the line looks like a person's name.
+    static func looksLikeName(_ line: String) -> Bool {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+
+        // Must not look like an address.
+        guard !looksLikeAddress(trimmed) else { return false }
+
+        // Must have no digits.
+        guard trimmed.rangeOfCharacter(from: .decimalDigits) == nil else { return false }
+
+        // Split into words and check count (1-4 words).
+        let words = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+        guard (1...4).contains(words.count) else { return false }
+
+        // All words must be primarily alphabetic (allow ., -, ').
+        let allowedNonAlpha = CharacterSet(charactersIn: ".-'")
+        for word in words {
+            let stripped = word.trimmingCharacters(in: CharacterSet(charactersIn: ".,"))
+            for scalar in stripped.unicodeScalars {
+                if !CharacterSet.letters.contains(scalar) && !allowedNonAlpha.contains(scalar) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
     static var emptyContact: ParsedContact {
         ParsedContact(
             namePrefix: .low(""),
@@ -557,7 +753,8 @@ private extension RegexParsingService {
             jobTitle: .low(""),
             organization: .low(""),
             phoneNumbers: [],
-            emailAddresses: []
+            emailAddresses: [],
+            address: nil
         )
     }
 }

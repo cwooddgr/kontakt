@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -70,10 +70,10 @@
 		074DBCC42A6062AC8E6E14D3 /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
 		0B465A55ADC9B0204FE9CB8F /* ContactStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactStore.swift; sourceTree = "<group>"; };
 		0D5D816AD0324DC3EC126948 /* MyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCardView.swift; sourceTree = "<group>"; };
-		0F1AA62BBABD1E733D688C05 /* KontaktTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KontaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F1AA62BBABD1E733D688C05 /* KontaktTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KontaktTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		139B4AC62E1702AB39366776 /* ContactListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactListView.swift; sourceTree = "<group>"; };
 		2A073138F23B772293A13CB7 /* AISparkleIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISparkleIndicator.swift; sourceTree = "<group>"; };
-		314DDD1046E4E427604BADE9 /* Kontakt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kontakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		314DDD1046E4E427604BADE9 /* Kontakt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kontakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36620C875617EDFFF402D9ED /* FullEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullEditView.swift; sourceTree = "<group>"; };
 		36E522FF47674164BC40EB3F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		39BE5239FDB10E9CAEF14BCA /* MyCardContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCardContactPicker.swift; sourceTree = "<group>"; };
@@ -334,7 +334,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2630;
+				LastUpgradeCheck = 1600;
 			};
 			buildConfigurationList = DCD2465CDA72DF253D60FCAE /* Build configuration list for PBXProject "Kontakt" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -346,6 +346,7 @@
 			);
 			mainGroup = 878A5FFD68F3BB01B4ADE9A1;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -440,7 +441,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -495,7 +495,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -510,7 +509,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2CTUXD4C44;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
 				INFOPLIST_KEY_CFBundleDisplayName = Kontakt;
@@ -556,7 +554,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2CTUXD4C44;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
 				INFOPLIST_KEY_CFBundleDisplayName = Kontakt;
@@ -599,7 +596,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -647,7 +643,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;

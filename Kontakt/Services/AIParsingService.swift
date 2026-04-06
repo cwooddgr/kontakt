@@ -148,6 +148,18 @@ extension AIParsingService {
 
         @Guide(description: "Email addresses found in the input")
         var emailAddresses: [String]
+
+        @Guide(description: "Street address including apartment, suite, or unit number, or empty string if not found")
+        var street: String
+
+        @Guide(description: "City name, or empty string if not found")
+        var city: String
+
+        @Guide(description: "State or province abbreviated if US (e.g., TX), or empty string if not found")
+        var addressState: String
+
+        @Guide(description: "ZIP or postal code, or empty string if not found")
+        var postalCode: String
     }
 
     // MARK: - Private Parsing Helpers
@@ -189,6 +201,7 @@ extension AIParsingService {
             Parse the following freeform text into structured contact fields. \
             Extract the name prefix (Dr., Mr., Ms., etc.), given name, family name, \
             job title, organization/company, phone numbers, and email addresses. \
+            Also extract any postal address components: street, city, state, and ZIP/postal code. \
             If a field is not present, use an empty string (or empty array for lists).
 
             Contact text:
@@ -198,6 +211,19 @@ extension AIParsingService {
             let response = try await session.respond(to: prompt, generating: GenerableContact.self)
             let generated = response.content
 
+            let address: ParsedAddress?
+            if !generated.street.isEmpty || !generated.city.isEmpty {
+                address = ParsedAddress(
+                    street: .high(generated.street),
+                    city: .high(generated.city),
+                    state: .high(generated.addressState),
+                    postalCode: .high(generated.postalCode),
+                    countryCode: .high("")
+                )
+            } else {
+                address = nil
+            }
+
             return ParsedContact(
                 namePrefix: .high(generated.namePrefix),
                 givenName: .high(generated.givenName),
@@ -205,7 +231,8 @@ extension AIParsingService {
                 jobTitle: .high(generated.jobTitle),
                 organization: .high(generated.organization),
                 phoneNumbers: generated.phoneNumbers.map { (value: $0, confidence: .high) },
-                emailAddresses: generated.emailAddresses.map { (value: $0, confidence: .high) }
+                emailAddresses: generated.emailAddresses.map { (value: $0, confidence: .high) },
+                address: address
             )
         } catch {
             throw AIParsingError.generationFailed(underlying: error)

@@ -211,6 +211,25 @@ struct ParsePreviewView: View {
             ))
         }
 
+        if let address = parsedContact.address {
+            if !address.street.value.isEmpty {
+                fields.append(DisplayField(label: "street", value: address.street.value,
+                                            confidence: address.street.confidence, editableField: .street))
+            }
+            if !address.city.value.isEmpty {
+                fields.append(DisplayField(label: "city", value: address.city.value,
+                                            confidence: address.city.confidence, editableField: .city))
+            }
+            if !address.state.value.isEmpty {
+                fields.append(DisplayField(label: "state", value: address.state.value,
+                                            confidence: address.state.confidence, editableField: .state))
+            }
+            if !address.postalCode.value.isEmpty {
+                fields.append(DisplayField(label: "zip", value: address.postalCode.value,
+                                            confidence: address.postalCode.confidence, editableField: .postalCode))
+            }
+        }
+
         for (index, phone) in parsedContact.phoneNumbers.enumerated() where !phone.value.isEmpty {
             fields.append(DisplayField(
                 label: "phone",
@@ -242,6 +261,10 @@ enum EditableField: Equatable {
     case familyName
     case jobTitle
     case organization
+    case street
+    case city
+    case state
+    case postalCode
     case phone(Int)
     case email(Int)
 }

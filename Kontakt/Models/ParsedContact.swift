@@ -36,6 +36,7 @@ struct ParsedContact: Sendable {
     var organization: ParsedContactField
     var phoneNumbers: [(value: String, confidence: FieldConfidence)]
     var emailAddresses: [(value: String, confidence: FieldConfidence)]
+    var address: ParsedAddress?
 
     /// The lowest confidence among the name fields.
     var nameConfidence: FieldConfidence {
@@ -79,6 +80,13 @@ struct ParsedContact: Sendable {
                     label: CNLabelHome,
                     value: email.value as NSString
                 )
+            )
+        }
+
+        if let address, !address.street.value.isEmpty {
+            let postalAddress = address.toCNPostalAddress()
+            contact.postalAddresses.append(
+                CNLabeledValue(label: CNLabelHome, value: postalAddress as CNPostalAddress)
             )
         }
 

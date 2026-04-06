@@ -53,6 +53,7 @@ struct NewContactView: View {
                 || !parsed.familyName.value.isEmpty
                 || parsed.phoneNumbers.contains(where: { !$0.value.isEmpty })
                 || parsed.emailAddresses.contains(where: { !$0.value.isEmpty })
+                || !(parsed.address?.street.value.isEmpty ?? true)
         }
     }
 
@@ -311,6 +312,19 @@ struct NewContactView: View {
             parsedContact?.jobTitle = .high(newValue)
         case .organization:
             parsedContact?.organization = .high(newValue)
+        case .street:
+            if parsedContact?.address == nil {
+                parsedContact?.address = ParsedAddress(
+                    street: .high(newValue), city: .low(""), state: .low(""), postalCode: .low(""), countryCode: .low(""))
+            } else {
+                parsedContact?.address?.street = .high(newValue)
+            }
+        case .city:
+            parsedContact?.address?.city = .high(newValue)
+        case .state:
+            parsedContact?.address?.state = .high(newValue)
+        case .postalCode:
+            parsedContact?.address?.postalCode = .high(newValue)
         case .phone(let index):
             if index < (parsedContact?.phoneNumbers.count ?? 0) {
                 parsedContact?.phoneNumbers[index] = (value: newValue, confidence: .high)

@@ -174,4 +174,60 @@ final class RegexParsingServiceTests: XCTestCase {
         XCTAssertTrue(result.emailAddresses.isEmpty)
         XCTAssertEqual(result.nameConfidence, .low)
     }
+
+    // MARK: - Overhauled Contact Parser Tests
+
+    func testParseContact_mailingLabel() {
+        let result = RegexParsingService.parseContact(
+            "MISS JANICE SMITH\nPO BOX 34\nDULUTH MN 55803-0034"
+        )
+        XCTAssertEqual(result.namePrefix.value, "Miss")
+        XCTAssertEqual(result.givenName.value, "Janice")
+        XCTAssertEqual(result.familyName.value, "Smith")
+        XCTAssertNotNil(result.address)
+        XCTAssertTrue(result.organization.value.isEmpty)
+    }
+
+    func testParseContact_nameAndAddress() {
+        let result = RegexParsingService.parseContact(
+            "Jennifer Smith\n1234 Main St\nAustin, TX 78704"
+        )
+        XCTAssertEqual(result.givenName.value, "Jennifer")
+        XCTAssertEqual(result.familyName.value, "Smith")
+        XCTAssertNotNil(result.address)
+        XCTAssertEqual(result.address?.state.value, "TX")
+        XCTAssertEqual(result.address?.postalCode.value, "78704")
+    }
+
+    func testParseContact_emailSignature() {
+        let result = RegexParsingService.parseContact(
+            "Jennifer Smith\nSenior Engineer, Acme Corp\n512-555-1234\njen@acme.com\n1234 Main St, Austin, TX 78704"
+        )
+        XCTAssertFalse(result.givenName.value.isEmpty)
+        XCTAssertEqual(result.phoneNumbers.count, 1)
+        XCTAssertEqual(result.emailAddresses.count, 1)
+        XCTAssertNotNil(result.address)
+    }
+
+    func testParseContact_allCapsNormalization() {
+        let result = RegexParsingService.parseContact("JOHN DOE")
+        XCTAssertEqual(result.givenName.value, "John")
+        XCTAssertEqual(result.familyName.value, "Doe")
+    }
+
+    func testParseContact_prefixCaseInsensitive() {
+        let result = RegexParsingService.parseContact("MR JOHN DOE")
+        XCTAssertEqual(result.namePrefix.value, "Mr.")
+        XCTAssertEqual(result.givenName.value, "John")
+        XCTAssertEqual(result.familyName.value, "Doe")
+    }
+
+    func testParseContact_namePhoneAddress() {
+        let result = RegexParsingService.parseContact(
+            "Jane Doe 512-555-0000\n100 Oak Ave, Dallas, TX 75201"
+        )
+        XCTAssertFalse(result.givenName.value.isEmpty)
+        XCTAssertEqual(result.phoneNumbers.count, 1)
+        XCTAssertNotNil(result.address)
+    }
 }
