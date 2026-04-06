@@ -37,7 +37,7 @@ final class SearchEngine: Sendable {
         CNContactEmailAddressesKey as CNKeyDescriptor,
         CNContactPhoneNumbersKey as CNKeyDescriptor,
         CNContactPostalAddressesKey as CNKeyDescriptor,
-        CNContactNoteKey as CNKeyDescriptor,
+        // CNContactNoteKey excluded — requires com.apple.developer.contacts.notes entitlement
     ]
 
     // MARK: - Building the Index

@@ -25,15 +25,21 @@ struct ContactListView: View {
     // MARK: - Body
 
     var body: some View {
-        Group {
+        VStack(spacing: 0) {
+            // Search field persists across all states to maintain focus
+            if !contactStore.contacts.isEmpty && !appState.isBrowsingAll {
+                searchField
+                    .padding(.top, KSpacing.m)
+            }
+
             if contactStore.contacts.isEmpty {
                 emptyState
             } else if appState.isBrowsingAll {
                 browseAllView
             } else if !searchText.isEmpty {
-                searchResultsView
+                searchResultsContent
             } else {
-                readyState
+                starsContent
             }
         }
         .navigationTitle("People")
@@ -94,17 +100,13 @@ struct ContactListView: View {
 
     // MARK: - State 1: Ready State
 
-    private var readyState: some View {
+    private var starsContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: KSpacing.l) {
-                searchField
-
-                StarsGridView(onBrowseAll: {
-                    withAnimation {
-                        appState.isBrowsingAll = true
-                    }
-                })
-            }
+            StarsGridView(onBrowseAll: {
+                withAnimation {
+                    appState.isBrowsingAll = true
+                }
+            })
             .padding(.top, KSpacing.m)
         }
         .scrollDismissesKeyboard(.interactively)
@@ -147,36 +149,31 @@ struct ContactListView: View {
 
     // MARK: - State 2: Search Results
 
-    private var searchResultsView: some View {
-        VStack(spacing: 0) {
-            searchField
-                .padding(.top, KSpacing.m)
-
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(searchResults) { result in
-                        SearchResultRowView(
-                            result: result,
-                            isStarred: contactStore.isStarred(identifier: result.contact.identifier),
-                            onDelete: {
-                                contactToDelete = result.contact
-                                showDeleteConfirmation = true
-                            }
-                        )
-                    }
-
-                    if !searchResults.isEmpty {
-                        Text("\(searchResults.count) result\(searchResults.count == 1 ? "" : "s")")
-                            .font(.label)
-                            .foregroundStyle(Color.textTertiary)
-                            .padding(.horizontal, KSpacing.xl)
-                            .padding(.top, KSpacing.m)
-                    }
+    private var searchResultsContent: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(searchResults) { result in
+                    SearchResultRowView(
+                        result: result,
+                        isStarred: contactStore.isStarred(identifier: result.contact.identifier),
+                        onDelete: {
+                            contactToDelete = result.contact
+                            showDeleteConfirmation = true
+                        }
+                    )
                 }
-                .animation(.easeInOut(duration: 0.15), value: searchResults.map(\.contact.identifier))
+
+                if !searchResults.isEmpty {
+                    Text("\(searchResults.count) result\(searchResults.count == 1 ? "" : "s")")
+                        .font(.label)
+                        .foregroundStyle(Color.textTertiary)
+                        .padding(.horizontal, KSpacing.xl)
+                        .padding(.top, KSpacing.m)
+                }
             }
-            .scrollDismissesKeyboard(.interactively)
+            .animation(.easeInOut(duration: 0.15), value: searchResults.map(\.contact.identifier))
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     // MARK: - State 3: Browse All
