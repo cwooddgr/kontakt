@@ -198,6 +198,7 @@ struct MyCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("INCLUDED FIELDS")
                 .font(.labelCaps)
+                .tracking(0.5)
                 .foregroundStyle(Color.textTertiary)
                 .padding(.bottom, KSpacing.s)
 

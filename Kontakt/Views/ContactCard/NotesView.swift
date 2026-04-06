@@ -17,11 +17,12 @@ struct NotesView: View {
         VStack(alignment: .leading, spacing: KSpacing.m) {
             // Separator -- the ONLY one in the contact card
             Rectangle()
-                .fill(Color.secondary.opacity(0.2))
+                .fill(Color(UIColor.separator))
                 .frame(height: 0.5)
 
             Text("NOTES")
                 .font(.labelCaps)
+                .tracking(0.5)
                 .foregroundStyle(Color.textTertiary)
 
             if isEditing {

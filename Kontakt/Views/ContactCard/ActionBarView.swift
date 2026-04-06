@@ -41,6 +41,7 @@ struct ActionBarView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity)
         .sheet(isPresented: $showPhonePicker) {
             phonePicker
         }

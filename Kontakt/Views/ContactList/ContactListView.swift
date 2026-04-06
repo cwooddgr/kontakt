@@ -156,6 +156,7 @@ struct ContactListView: View {
                         .padding(.top, KSpacing.m)
                 }
             }
+            .animation(.easeInOut(duration: 0.15), value: searchResults.map(\.contact.identifier))
         }
     }
 
@@ -183,10 +184,10 @@ struct ContactListView: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.labelCaps)
+            .tracking(0.5)
             .foregroundStyle(Color.textTertiary)
             .padding(.leading, KSpacing.l)
             .padding(.bottom, KSpacing.s)
-            .padding(.top, KSpacing.s)
     }
 
     // MARK: - Data Helpers

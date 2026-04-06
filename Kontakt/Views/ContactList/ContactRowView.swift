@@ -4,8 +4,7 @@ import SwiftUI
 ///
 /// Adapts between compact mode (no photo, ~52pt) and standard mode (40x40 photo, ~60pt)
 /// based on the current density setting in AppState. The entire row is tappable via
-/// NavigationLink. Horizontal swipe gestures reveal pin/unpin (leading) and delete
-/// (trailing) action buttons.
+/// NavigationLink. A horizontal swipe gesture reveals a pin/unpin (leading) action button.
 struct ContactRowView: View {
     let contact: ContactWrapper
     let isPinned: Bool
@@ -19,7 +18,7 @@ struct ContactRowView: View {
     private let actionButtonWidth: CGFloat = 72
 
     private enum SwipeDirection {
-        case none, leading, trailing
+        case none, leading
     }
 
     var body: some View {
@@ -44,26 +43,6 @@ struct ContactRowView: View {
                 Spacer()
             }
             .opacity(activeSwipe == .leading ? 1 : 0)
-
-            // Trailing action (delete) — revealed when swiping left
-            HStack(spacing: 0) {
-                Spacer()
-                Button {
-                    deleteContact()
-                    resetSwipe()
-                } label: {
-                    VStack(spacing: KSpacing.xs) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 17, weight: .medium))
-                        Text("Delete")
-                            .font(.system(size: 11, weight: .medium))
-                    }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: actionButtonWidth, maxHeight: .infinity)
-                    .background(Color.red)
-                }
-            }
-            .opacity(activeSwipe == .trailing ? 1 : 0)
 
             // Main row content
             NavigationLink(value: contact.identifier) {
@@ -122,17 +101,15 @@ struct ContactRowView: View {
             .onChanged { value in
                 let horizontal = value.translation.width
 
-                // Determine the swipe direction once at the start
-                if activeSwipe == .none {
-                    activeSwipe = horizontal > 0 ? .leading : .trailing
+                // Only allow leading (right) swipe for pin/unpin
+                if activeSwipe == .none && horizontal > 0 {
+                    activeSwipe = .leading
                 }
 
                 // Clamp the offset within bounds
                 switch activeSwipe {
                 case .leading:
                     swipeOffset = min(max(horizontal, 0), actionButtonWidth)
-                case .trailing:
-                    swipeOffset = max(min(horizontal, 0), -actionButtonWidth)
                 case .none:
                     break
                 }
@@ -146,12 +123,6 @@ struct ContactRowView: View {
                     case .leading:
                         if horizontal > threshold {
                             swipeOffset = actionButtonWidth
-                        } else {
-                            resetSwipe()
-                        }
-                    case .trailing:
-                        if horizontal < -threshold {
-                            swipeOffset = -actionButtonWidth
                         } else {
                             resetSwipe()
                         }
@@ -174,14 +145,6 @@ struct ContactRowView: View {
     private func togglePin() {
         HapticManager.mediumImpact()
         contactStore.togglePin(identifier: contact.identifier)
-    }
-
-    private func deleteContact() {
-        do {
-            try contactStore.deleteContact(identifier: contact.identifier)
-        } catch {
-            HapticManager.error()
-        }
     }
 }
 

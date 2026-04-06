@@ -11,6 +11,8 @@ struct ContactPhoto: View {
     /// Display size. Common values: 40 (list), 56 (card).
     var size: CGFloat = 40
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Group {
             if let imageData, let uiImage = UIImage(data: imageData) {
@@ -23,6 +25,12 @@ struct ContactPhoto: View {
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: KRadius.m))
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: KRadius.m)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            }
+        }
     }
 
     private var initialsView: some View {

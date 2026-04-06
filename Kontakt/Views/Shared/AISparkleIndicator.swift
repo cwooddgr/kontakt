@@ -12,6 +12,7 @@ struct AISparkleIndicator: View {
                     .foregroundStyle(Color.accentSlateBlue)
                 Text("On-device")
                     .font(.labelCaps)
+                    .tracking(0.5)
                     .foregroundStyle(Color.textTertiary)
             }
             .opacity(isVisible ? 1 : 0)

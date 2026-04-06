@@ -30,7 +30,7 @@ struct OnboardingView: View {
             }
 
             // Icon
-            Image(systemName: "person.2.fill")
+            Image(systemName: "person.2")
                 .font(.system(size: 56, weight: .thin))
                 .foregroundStyle(Color.accentSlateBlue)
 

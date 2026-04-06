@@ -21,6 +21,7 @@ struct InlineFieldEditor: View {
 
     @State private var editedValue: String
     @State private var isHighlighted = false
+    @State private var showSaveFlash = false
     @FocusState private var isFocused: Bool
 
     // MARK: - Init
@@ -52,8 +53,9 @@ struct InlineFieldEditor: View {
             .padding(.vertical, KSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: KRadius.m)
-                    .fill(Color.accentSubtle)
-                    .opacity(isHighlighted ? 1 : 0)
+                    .fill(showSaveFlash ? Color.green.opacity(0.15) : Color.accentSubtle)
+                    .opacity(isHighlighted || showSaveFlash ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.3), value: showSaveFlash)
             )
             .onAppear {
                 isFocused = true
@@ -111,6 +113,10 @@ struct InlineFieldEditor: View {
     private func save() {
         let trimmed = editedValue.trimmingCharacters(in: .whitespacesAndNewlines)
         HapticManager.success()
+        showSaveFlash = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            showSaveFlash = false
+        }
         onSave(trimmed)
     }
 }

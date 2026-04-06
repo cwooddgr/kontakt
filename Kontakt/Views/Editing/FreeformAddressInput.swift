@@ -103,6 +103,7 @@ struct FreeformAddressInput: View {
         VStack(alignment: .leading, spacing: KSpacing.s) {
             Text("ADDRESS")
                 .font(.labelCaps)
+                .tracking(0.5)
                 .foregroundStyle(Color.textTertiary)
 
             TextEditor(text: $freeformText)
@@ -138,6 +139,7 @@ struct FreeformAddressInput: View {
             HStack {
                 Text("PARSED RESULT")
                     .font(.labelCaps)
+                    .tracking(0.5)
                     .foregroundStyle(Color.textTertiary)
 
                 Spacer()
@@ -277,6 +279,7 @@ struct FreeformAddressInput: View {
         VStack(alignment: .leading, spacing: KSpacing.l) {
             Text("ADDRESS FIELDS")
                 .font(.labelCaps)
+                .tracking(0.5)
                 .foregroundStyle(Color.textTertiary)
 
             structuredField(label: "Street", text: $streetText)

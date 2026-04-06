@@ -22,7 +22,7 @@ struct ContactCardView: View {
             if let contact {
                 cardContent(contact)
             } else {
-                ProgressView()
+                Color.clear
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }

@@ -14,7 +14,7 @@ struct SectionIndexView: View {
         VStack(spacing: 1) {
             ForEach(letters, id: \.self) { letter in
                 Text(letter)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 10, weight: .regular))
                     .foregroundStyle(Color.accentSlateBlue)
                     .frame(width: 16, height: letterHeight)
             }

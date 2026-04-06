@@ -7,6 +7,7 @@ struct CopyConfirmationView: View {
     var body: some View {
         Text("Copied")
             .font(.labelCaps)
+            .tracking(0.5)
             .foregroundStyle(Color.textTertiary)
             .padding(.horizontal, KSpacing.m)
             .padding(.vertical, KSpacing.s)
@@ -43,7 +44,7 @@ struct CopyConfirmationModifier: ViewModifier {
     }
 
     private func show() {
-        withAnimation(reduceMotion ? .easeOut(duration: 0.2) : .spring(duration: 0.2, bounce: 0.3)) {
+        withAnimation(reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.5, dampingFraction: 0.7)) {
             visible = true
         }
 
