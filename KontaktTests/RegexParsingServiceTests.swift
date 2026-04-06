@@ -185,7 +185,20 @@ final class RegexParsingServiceTests: XCTestCase {
         XCTAssertEqual(result.givenName.value, "Janice")
         XCTAssertEqual(result.familyName.value, "Smith")
         XCTAssertNotNil(result.address)
+        XCTAssertEqual(result.address?.postalCode.value, "55803-0034")
+        XCTAssertEqual(result.address?.state.value, "MN")
+        XCTAssertFalse(result.address?.city.value.isEmpty ?? true)
+        XCTAssertFalse(result.address?.street.value.isEmpty ?? true)
         XCTAssertTrue(result.organization.value.isEmpty)
+    }
+
+    func testParseContact_addressOnly() {
+        let result = RegexParsingService.parseContact(
+            "1234 Main St, Austin, TX 78704"
+        )
+        XCTAssertNotNil(result.address)
+        XCTAssertEqual(result.address?.state.value, "TX")
+        XCTAssertEqual(result.address?.postalCode.value, "78704")
     }
 
     func testParseContact_nameAndAddress() {

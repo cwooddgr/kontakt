@@ -88,7 +88,7 @@ struct ParsedContact: Sendable {
             )
         }
 
-        if let address, !address.street.value.isEmpty {
+        if let address, !address.street.value.isEmpty || !address.city.value.isEmpty || !address.postalCode.value.isEmpty {
             let postalAddress = address.toCNPostalAddress()
             contact.postalAddresses.append(
                 CNLabeledValue(label: CNLabelHome, value: postalAddress as CNPostalAddress)
@@ -110,7 +110,7 @@ struct ParsedContact: Sendable {
         }
         if let birthday = extraFields["birthday"], !birthday.isEmpty {
             let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withFullDate]
+            formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
             if let date = formatter.date(from: birthday) {
                 contact.birthday = Calendar.current.dateComponents([.year, .month, .day], from: date)
             }
