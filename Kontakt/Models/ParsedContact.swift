@@ -38,6 +38,11 @@ struct ParsedContact: Sendable {
     var emailAddresses: [(value: String, confidence: FieldConfidence)]
     var address: ParsedAddress?
 
+    /// Extra fields extracted by the AI tier that don't have dedicated properties.
+    /// Keys: middleName, nameSuffix, nickname, department, birthday (YYYY-MM-DD),
+    /// notes, urls (newline-separated), socialProfiles (newline-separated).
+    var extraFields: [String: String] = [:]
+
     /// The lowest confidence among the name fields.
     var nameConfidence: FieldConfidence {
         [givenName, familyName]
@@ -88,6 +93,48 @@ struct ParsedContact: Sendable {
             contact.postalAddresses.append(
                 CNLabeledValue(label: CNLabelHome, value: postalAddress as CNPostalAddress)
             )
+        }
+
+        // Apply extra fields from AI parsing
+        if let middleName = extraFields["middleName"], !middleName.isEmpty {
+            contact.middleName = middleName
+        }
+        if let nameSuffix = extraFields["nameSuffix"], !nameSuffix.isEmpty {
+            contact.nameSuffix = nameSuffix
+        }
+        if let nickname = extraFields["nickname"], !nickname.isEmpty {
+            contact.nickname = nickname
+        }
+        if let department = extraFields["department"], !department.isEmpty {
+            contact.departmentName = department
+        }
+        if let birthday = extraFields["birthday"], !birthday.isEmpty {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withFullDate]
+            if let date = formatter.date(from: birthday) {
+                contact.birthday = Calendar.current.dateComponents([.year, .month, .day], from: date)
+            }
+        }
+        if let notes = extraFields["notes"], !notes.isEmpty {
+            contact.note = notes
+        }
+        if let urls = extraFields["urls"], !urls.isEmpty {
+            for url in urls.components(separatedBy: "\n") where !url.isEmpty {
+                contact.urlAddresses.append(
+                    CNLabeledValue(label: CNLabelHome, value: url as NSString)
+                )
+            }
+        }
+        if let profiles = extraFields["socialProfiles"], !profiles.isEmpty {
+            for profile in profiles.components(separatedBy: "\n") where !profile.isEmpty {
+                let socialProfile = CNSocialProfile(
+                    urlString: profile, username: "", userIdentifier: "",
+                    service: nil
+                )
+                contact.socialProfiles.append(
+                    CNLabeledValue(label: nil, value: socialProfile)
+                )
+            }
         }
 
         return contact
