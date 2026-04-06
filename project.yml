@@ -12,6 +12,7 @@ settings:
     SWIFT_VERSION: "6.0"
     ENABLE_USER_SCRIPT_SANDBOXING: "YES"
     SWIFT_STRICT_CONCURRENCY: complete
+    DEVELOPMENT_TEAM: 2CTUXD4C44
 
 targets:
   Kontakt:
