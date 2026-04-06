@@ -35,7 +35,7 @@ struct ContactCardView: View {
             }
         }
         .copyConfirmation(isPresented: $showCopyConfirmation)
-        .task {
+        .onAppear {
             contact = contactStore.fetchContactDetail(identifier: contactIdentifier)
         }
     }
@@ -147,7 +147,7 @@ struct ContactCardView: View {
     private func addressSection(_ contact: CNContact) -> some View {
         if contact.hasPostalAddresses {
             VStack(alignment: .leading, spacing: KSpacing.l) {
-                ForEach(contact.formattedAddresses, id: \.value) { address in
+                ForEach(Array(contact.formattedAddresses.enumerated()), id: \.offset) { _, address in
                     FieldView(
                         label: address.label,
                         value: address.value,
@@ -188,7 +188,7 @@ struct ContactCardView: View {
         let dates = formattedDates(for: contact)
         if !dates.isEmpty {
             VStack(alignment: .leading, spacing: KSpacing.l) {
-                ForEach(dates, id: \.label) { item in
+                ForEach(Array(dates.enumerated()), id: \.offset) { _, item in
                     FieldView(
                         label: item.label,
                         value: item.value,
@@ -265,7 +265,7 @@ struct ContactCardView: View {
 
     private func callPhone(_ number: String) {
         let cleaned = number.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
-        guard let url = URL(string: "tel://\(cleaned)") else { return }
+        guard let url = URL(string: "tel:\(cleaned)") else { return }
         openURL(url)
     }
 

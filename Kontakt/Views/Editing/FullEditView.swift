@@ -105,7 +105,6 @@ struct FullEditView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
             Group {
                 if loadError {
                     errorContent
@@ -134,7 +133,10 @@ struct FullEditView: View {
             .onAppear {
                 loadContact()
             }
-            .alert("Error", isPresented: .constant(saveError != nil)) {
+            .alert("Error", isPresented: Binding(
+                get: { saveError != nil },
+                set: { if !$0 { saveError = nil } }
+            )) {
                 Button("OK") {
                     saveError = nil
                 }
@@ -170,7 +172,6 @@ struct FullEditView: View {
             .sheet(isPresented: $showAddFieldPicker) {
                 addFieldSheet
             }
-        }
     }
 
     // MARK: - Error State

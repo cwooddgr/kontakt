@@ -146,7 +146,7 @@ struct ActionBarView: View {
         case .message: scheme = "sms"
         case .facetime: scheme = "facetime"
         }
-        guard let url = URL(string: "\(scheme)://\(cleaned)") else { return }
+        guard let url = URL(string: "\(scheme):\(cleaned)") else { return }
         openURL(url)
     }
 

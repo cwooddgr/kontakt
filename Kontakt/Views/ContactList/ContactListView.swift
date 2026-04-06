@@ -223,16 +223,22 @@ struct ContactListView: View {
         letterGroups.map(\.letter)
     }
 
-    /// Rebuilds the search index whenever contacts change.
+    /// Rebuilds the search index on a background thread whenever contacts change.
     private func rebuildSearchIndex() {
         let keys = SearchEngine.indexFetchKeys
-        let store = contactStore.cnContactStore
-        var cnContacts: [CNContact] = []
-        let request = CNContactFetchRequest(keysToFetch: keys)
-        try? store.enumerateContacts(with: request) { contact, _ in
-            cnContacts.append(contact)
+        let store = CNContactStore()
+        let engine = searchEngine
+        Task.detached {
+            var cnContacts: [CNContact] = []
+            let request = CNContactFetchRequest(keysToFetch: keys)
+            try? store.enumerateContacts(with: request) { contact, _ in
+                cnContacts.append(contact)
+            }
+            let newIndex = engine.buildIndex(from: cnContacts)
+            await MainActor.run {
+                searchIndex = newIndex
+            }
         }
-        searchIndex = searchEngine.buildIndex(from: cnContacts)
     }
 
     /// Performs a search using the SearchEngine.

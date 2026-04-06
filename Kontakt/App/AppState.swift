@@ -31,6 +31,15 @@ final class AppState {
     /// Whether the search field is currently active.
     var isSearchActive: Bool = false
 
-    /// Display density for the contact list. Defaults to compact.
-    var densityMode: DensityMode = .compact
+    /// Display density for the contact list. Defaults to compact. Persisted in UserDefaults.
+    var densityMode: DensityMode {
+        didSet {
+            UserDefaults.standard.set(densityMode.rawValue, forKey: "densityMode")
+        }
+    }
+
+    init() {
+        let stored = UserDefaults.standard.string(forKey: "densityMode") ?? DensityMode.compact.rawValue
+        self.densityMode = DensityMode(rawValue: stored) ?? .compact
+    }
 }
